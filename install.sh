@@ -155,8 +155,7 @@ function InstallLibiconv()
         ./configure --prefix=/usr/local/libiconv;
         make;
         make install;
-        echo "[OK] libiconv install completed.";
-    else
+
         echo '[OK] libiconv is installed!';
     fi;
 }
@@ -183,8 +182,7 @@ function InstallLibmcrypt()
         ln -sf /usr/local/lib/libmcrypt.so.4 /usr/lib/libmcrypt.so.4;
         ln -sf /usr/local/lib/libmcrypt.so.4.4.8 /usr/lib/libmcrypt.so.4.4.8;
         ldconfig;
-        echo "[OK] libmcrypt install completed.";
-    else
+
         echo '[OK] libmcrypt is installed!';
     fi;
 }
@@ -208,8 +206,7 @@ function InstallMhash()
         ln -sf /usr/local/lib/libmhash.so.2 /usr/lib/libmhash.so.2
         ln -sf /usr/local/lib/libmhash.so.2.0.1 /usr/lib/libmhash.so.2.0.1
         ldconfig
-        echo "[OK] mhash install completed.";
-    else
+
         echo '[OK] mhash is installed!';
     fi;
 }
@@ -227,8 +224,7 @@ function InstallMcrypt()
         ./configure --prefix=/usr/local/mcrypt;
         make;
         make install;
-        echo "[OK] mcrypt install completed.";
-    else
+
         echo '[OK] mcrypt is installed!';
     fi;
 }
@@ -246,8 +242,7 @@ function InstallAutoconf()
         ./configure --prefix=/usr/local/autoconf
         make;
         make install;
-        echo "[OK] autoconf install completed.";
-    else
+
         echo '[OK] autoconf is installed!';
     fi;
 }
@@ -265,8 +260,7 @@ function InstallPcre()
         ./configure --prefix=/usr/local/pcre;
         make;
         make install;
-        echo "[OK] pcre install completed.";
-    else
+
         echo '[OK] pcre is installed!';
     fi;
 }
@@ -284,8 +278,7 @@ function InstallCurl()
         ./configure --prefix=/usr/local/curl --enable-ares --without-nss --with-ssl;
         make;
         make install;
-        echo "[OK] curl install completed.";
-    else
+
         echo '[OK] curl is installed!';
     fi;
 }
@@ -304,8 +297,7 @@ function InstallZlib()
         make install;
         echo '/usr/local/zlib/lib' >> /etc/ld.so.conf.d/local.conf;
         ldconfig -v;
-        echo "[OK] zlib install completed.";
-    else
+
         echo '[OK] zlib is installed!';
     fi;
 }
@@ -322,8 +314,7 @@ function InstallLibressl()
         ./config --prefix=/usr/local/libressl;
         make;
         make install;
-        echo "[OK] libressl install completed.";
-    else
+
         echo '[OK] libressl is installed!';
     fi;
 }
@@ -474,8 +465,7 @@ DROP USER ''@'%';
 FLUSH PRIVILEGES;
 EOF
 # **************************************
-        echo "[OK] MYSQL install completed.";
-    else
+
         echo '[OK] MySQL is installed.';
     fi;
 }
@@ -591,8 +581,7 @@ EOF
         chmod +x /etc/init.d/php-fpm;
 
         echo "[OK] PHP install completed.";
-    else
-        echo '[OK] PHP is installed.';
+
     fi;
 }
 
@@ -619,8 +608,6 @@ function InstallNginx()
         /usr/local/nginx/sbin/nginx;
         ln -sf /usr/local/nginx/sbin/nginx /usr/bin/nginx;
 
-        echo "[OK] Nginx install completed.";
-    else
         echo '[OK] Nginx is installed.';
     fi;
 }
