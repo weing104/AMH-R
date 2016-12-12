@@ -582,7 +582,6 @@ EOF
 
         echo "[OK] PHP install completed.";
 
-    fi;
 }
 
 function InstallNginx()
