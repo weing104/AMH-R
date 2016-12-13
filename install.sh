@@ -81,8 +81,7 @@ function InstallLibiconv()
         cd /usr/local/src/libiconv-1.14;
         patch -p0 < /home/patch/libiconv-glibc-2.16.patch
         ./configure --prefix=/usr/local/libiconv;
-        make;
-        make install;
+        make && make install;
         echo "[OK] libiconv install completed.";
     fi;
 }
@@ -98,8 +97,8 @@ function InstallLibmcrypt()
 
         cd /usr/local/src/libmcrypt-2.5.8;
         ./configure --prefix=/usr/local/libmcrypt;
-        make;
-        make install;
+        make && make install;
+
         /sbin/ldconfig;
         cd libltdl/;
         ./configure --enable-ltdl-install;
@@ -109,8 +108,7 @@ function InstallLibmcrypt()
         ln -sf /usr/local/lib/libmcrypt.so.4 /usr/lib/libmcrypt.so.4;
         ln -sf /usr/local/lib/libmcrypt.so.4.4.8 /usr/lib/libmcrypt.so.4.4.8;
         ldconfig;
-        echo "[OK] libmcrypt install completed.";
-    else
+
         echo '[OK] libmcrypt is installed!';
     fi;
 }
@@ -126,8 +124,7 @@ function InstallMhash()
 
         cd /usr/local/src/mhash-0.9.9.9;
         ./configure --prefix=/usr/local/mhash;
-        make;
-        make install;
+        make && make install;
         ln -sf /usr/local/lib/libmhash.a /usr/lib/libmhash.a
         ln -sf /usr/local/lib/libmhash.la /usr/lib/libmhash.la
         ln -sf /usr/local/lib/libmhash.so /usr/lib/libmhash.so
@@ -150,8 +147,7 @@ function InstallMcrypt()
 
         cd /usr/local/src/mcrypt-2.6.8;
         ./configure --prefix=/usr/local/mcrypt;
-        make;
-        make install;
+        make && make install;
 
         echo '[OK] mcrypt is installed!';
     fi;
@@ -168,8 +164,7 @@ function InstallAutoconf()
 
         cd /usr/local/src/autoconf-2.13
         ./configure --prefix=/usr/local/autoconf
-        make;
-        make install;
+        make && make install;
 
         echo '[OK] autoconf is installed!';
     fi;
@@ -186,8 +181,7 @@ function InstallPcre()
     
         cd /usr/local/src/pcre-8.39;
         ./configure --prefix=/usr/local/pcre;
-        make;
-        make install;
+        make && make install;
 
         echo '[OK] pcre is installed!';
     fi;
@@ -202,7 +196,7 @@ function InstallCurl()
         wget https://curl.haxx.se/download/curl-7.51.0.tar.gz;
         tar -zxf curl-7.51.0.tar.gz -C /usr/local/src;
     
-        cd /usr/local/src/pcre-7.51.0;
+        cd /usr/local/src/curl-7.51.0;
         ./configure --prefix=/usr/local/curl --enable-ares --without-nss --with-ssl;
         make;
         make install;
@@ -223,14 +217,35 @@ function InstallZlib()
         ./configure --prefix=/usr/local/zlib;
         make;
         make install;
-        echo '/usr/local/zlib/lib' >> /etc/ld.so.conf.d/local.conf;
-        ldconfig -v;
-        echo "[OK] zlib install completed.";
-    else
+        echo '/usr/local/zlib/lib' >> /etc/ld.so.conf.d/zlib.conf;
+        ldconfig;
+
         echo '[OK] zlib is installed!';
     fi;
 }
 
+
+function InstallFreetype()
+{
+    # [dir] /usr/local/zlib /usr/local/src/zlib*
+    if [ ! -d /usr/local/freetype ]; then
+        cd /home/download;
+        wget http://download.savannah.gnu.org/releases/freetype/freetype-2.4.2.tar.gz;
+        tar -zxf freetype-2.4.2.tar.gz -C /usr/local/src;
+    
+        cd /usr/local/src/freetype-2.4.2;
+        ./configure --prefix=/usr/local/freetype;
+        make && make install;
+        cat > /etc/ld.so.conf.d/freetype.conf<<EOF
+/usr/local/freetype/lib
+EOF
+    ldconfig
+    ln -sf /usr/local/freetype/include/freetype2 /usr/local/include
+    ln -sf /usr/local/freetype/include/ft2build.h /usr/local/include
+
+        echo '[OK] freetype is installed!';
+    fi;
+}
 
 function InstallMysql()
 {
@@ -354,6 +369,7 @@ function InstallPhp()
     if [ ! -d /usr/local/php ]; then
         mkdir -p /usr/local/php;
         mkdir -p /usr/local/php/etc;
+        chown -R www:www /usr/local/php;
         cd /home/download;
         wget http://php.net/distributions/php-5.5.38.tar.gz;
         tar -zxf php-5.5.38.tar.gz -C /usr/local/src;
@@ -371,6 +387,7 @@ function InstallPhp()
         
         #配置PHP
         cp /usr/local/php/php.ini-production /usr/local/php/etc/php.ini;
+        chmod +rw /usr/local/php/etc/php.ini;
 
         # php extensions
         sed -i 's#extension_dir = "./"#extension_dir = "/usr/local/php/lib/php/extensions/no-debug-non-zts-20060613/"\n#' /usr/local/php/etc/php.ini
@@ -383,10 +400,6 @@ function InstallPhp()
         sed -i 's/max_execution_time =.*/max_execution_time = 300/g' /usr/local/php/etc/php.ini
         sed -i 's/disable_functions =.*/disable_functions = passthru,exec,system,chroot,scandir,chgrp,chown,shell_exec,proc_open,proc_get_status,popen,ini_alter,ini_restore,dl,openlog,syslog,readlink,symlink,popepassthru,stream_socket_server,fsocket/g' /usr/local/php/etc/php.ini
 
-        #安装pear和composer
-        pear config-set php_ini /usr/local/php/etc/php.ini
-        pecl config-set php_ini /usr/local/php/etc/php.ini
-        curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
         cat >/usr/local/php/etc/php-fpm.conf<<EOF
 [global]
@@ -414,7 +427,7 @@ slowlog = var/log/slow.log
 EOF
         
         #设置启动项
-        cp /usr/local/php/src/sapi/fpm/init.d.php-fpm /etc/init.d/php-fpm;
+        cp ./sapi/fpm/init.d.php-fpm /etc/init.d/php-fpm;
         chmod +x /etc/init.d/php-fpm;
 
         echo '[OK] PHP is installed.';
@@ -437,7 +450,7 @@ function InstallNginx()
 
         #编译nginx
         cd /usr/local/src/nginx-1.10.2;
-        ./configure --prefix=/usr/local/nginx --user=www --group=www --with-http_ssl_module --with-http_v2_module --with-http_gzip_static_module --with-http_realip_module --with-http_sub_module --with-http_flv_module --with-http_mp4_module --with-http_stub_status_module --without-mail_pop3_module --without-mail_imap_module --without-mail_smtp_module --with-pcre=/usr/local/src/pcre-3.69 --with-zlib=/usr/local/src/zlib-1.2.8 --with-openssl=/usr/local/src/libressl-2.4.4; 
+        ./configure --prefix=/usr/local/nginx --user=www --group=www --with-http_ssl_module --with-http_v2_module --with-http_gzip_static_module --with-http_realip_module --with-http_sub_module --with-http_flv_module --with-http_mp4_module --with-http_stub_status_module --without-mail_pop3_module --without-mail_imap_module --without-mail_smtp_module --with-pcre=/usr/local/pcre --with-zlib=/usr/local/zlib --with-openssl=/usr/local/src/libressl-2.4.4; 
         make && make install;
 
         #设置软链
@@ -455,10 +468,6 @@ function InstallNginx()
         #配置nginx
         rm -f /usr/local/nginx/conf/nginx.conf;
         wget -O /usr/local/nginx/conf/nginx.conf --no-check-certificate https://raw.githubusercontent.com/weing104/AMH-R/master/nginx.conf;
-        
-
-        ln -s /usr/local/lib/libpcre.so.1 /lib64/
-        ln -s /usr/local/lib/libpcre.so.1 /lib/
 
         #配置启动项
         wget -O /etc/init.d/nginx --no-check-certificate https://raw.githubusercontent.com/weing104/AMH-R/master/nginx;
@@ -484,6 +493,7 @@ InstallAutoconf;
 InstallPcre;
 InstallCurl;
 InstallZlib;
+InstallFreetype;
 InstallMysql;
 InstallPhp;
 InstallNginx;
